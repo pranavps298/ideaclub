@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exotic Complaint Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            /* Replace with your actual image link */
+
+        }
+
+        #complaintForm {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #complaintList {
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .complaint {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .complaint img {
+            max-width: 100%;
+            max-height: 100px;
+            margin-left: 10px;
+        }
+
+        #complaintWrapper {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="complaintForm">
+        <h2>Submit a Complaint</h2>
+        <form id="submitForm" enctype="multipart/form-data">
+            <label for="complaintText">Complaint:</label>
+            <textarea id="complaintText" rows="4" cols="50" required></textarea>
+
+            <label for="photoUpload">Upload Photo (optional):</label>
+            <input type="file" id="photoUpload" accept="image/*">
+
+            <button type="button" onclick="submitComplaint()">Submit Complaint</button>
+        </form>
+    </div>
+
+    <div id="complaintList">
+        <h2>Complaints</h2>
+        <div id="complaints"></div>
+    </div>
+
+    <script>
+        let complaintsArray = [];
+
+        async function fetchComplaints() {
+            // Fetch only the complaints added by the user
+            const complaintsDiv = document.getElementById('complaints');
+
+            complaintsArray.forEach(complaint => {
+                const complaintDiv = createComplaintDiv(complaint.title, complaint.timestamp, complaint.photo);
+                complaintsDiv.appendChild(complaintDiv);
+            });
+        }
+
+        async function submitComplaint() {
+            const complaintText = document.getElementById('complaintText').value;
+            const photoUpload = document.getElementById('photoUpload').files[0];
+
+            const formData = new FormData();
+            formData.append('title', complaintText);
+
+            if (photoUpload) {
+                formData.append('photo', photoUpload);
+
+                // Convert the image to a data URL for displaying
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const photoDataUrl = e.target.result;
+                    complaintsArray.push({ title: complaintText, timestamp: new Date().toLocaleString(), photo: photoDataUrl });
+                    updateComplaints();
+                };
+                reader.readAsDataURL(photoUpload);
+            } else {
+                complaintsArray.push({ title: complaintText, timestamp: new Date().toLocaleString() });
+                updateComplaints();
+            }
+        }
+
+        function createComplaintDiv(title, timestamp, photo) {
+            const complaintDiv = document.createElement('div');
+            complaintDiv.classList.add('complaint');
+
+            const textDiv = document.createElement('div');
+            textDiv.textContent = title;
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.textContent = timestamp;
+
+            complaintDiv.appendChild(textDiv);
+            complaintDiv.appendChild(timestampDiv);
+
+            if (photo) {
+                const img = document.createElement('img');
+                img.src = photo;
+                complaintDiv.appendChild(img);
+            }
+
+            return complaintDiv;
+        }
+
+        function updateComplaints() {
+            // Clear the form and update the complaints
+            document.getElementById('submitForm').reset();
+            document.getElementById('complaints').innerHTML = '';
+            fetchComplaints();
+        }
+
+        // Initial fetch of complaints
+        fetchComplaints();
+    </script>
+
+</body>
+
+</html>
